@@ -116,36 +116,127 @@ function fromJSON(proto, json) {
  *  For more examples see unit tests.
  */
 
+// const cssSelectorBuilder = {
+//   element(/* value */) {
+//     throw new Error('Not implemented');
+//   },
+
+//   id(/* value */) {
+//     throw new Error('Not implemented');
+//   },
+
+//   class(/* value */) {
+//     throw new Error('Not implemented');
+//   },
+
+//   attr(/* value */) {
+//     throw new Error('Not implemented');
+//   },
+
+//   pseudoClass(/* value */) {
+//     throw new Error('Not implemented');
+//   },
+
+//   pseudoElement(/* value */) {
+//     throw new Error('Not implemented');
+//   },
+
+//   combine(/* selector1, combinator, selector2 */) {
+//     throw new Error('Not implemented');
+//   },
+// };
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  answer: '',
+
+  checkNotOccursTwiceOrMore(type) {
+    if (this.type === type) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector',
+      );
+    }
+  },
+  checkSelectorsOrder(type) {
+    if (this.type > type) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
+      );
+    }
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  element(value) {
+    const el = Object.create(cssSelectorBuilder);
+    el.answer = this.answer + value;
+    el.type = 1;
+
+    this.checkNotOccursTwiceOrMore(el.type);
+    this.checkSelectorsOrder(el.type);
+
+    return el;
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    const el = Object.create(cssSelectorBuilder);
+    el.answer = `${this.answer}#${value}`;
+    el.type = 2;
+
+    this.checkSelectorsOrder(el.type);
+    this.checkNotOccursTwiceOrMore(el.type);
+
+    return el;
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    const el = Object.create(cssSelectorBuilder);
+    el.answer = `${this.answer}.${value}`;
+    el.type = 3;
+
+    this.checkSelectorsOrder(el.type);
+
+    return el;
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    const el = Object.create(cssSelectorBuilder);
+    el.answer = `${this.answer}[${value}]`;
+    el.type = 4;
+
+    this.checkSelectorsOrder(el.type);
+
+    return el;
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    const el = Object.create(cssSelectorBuilder);
+    el.answer = `${this.answer}:${value}`;
+    el.type = 5;
+
+    this.checkSelectorsOrder(el.type);
+
+    return el;
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    const el = Object.create(cssSelectorBuilder);
+    el.answer = `${this.answer}::${value}`;
+    el.type = 6;
+
+    this.checkNotOccursTwiceOrMore(el.type);
+    this.checkSelectorsOrder(el.type);
+
+    return el;
+  },
+
+  combine(selector1, combinator, selector2) {
+    const el = Object.create(cssSelectorBuilder);
+    el.answer = `${selector1.answer} ${combinator} ${selector2.answer}`;
+
+    return el;
+  },
+
+  stringify() {
+    return this.answer;
   },
 };
-
 
 module.exports = {
   Rectangle,
